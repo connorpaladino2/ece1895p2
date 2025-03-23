@@ -1,3 +1,296 @@
-Turn an LED on and off. 
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-//NICHOLAS MCFEETERS COMMENT ON FORK HERE
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_RESET     -1
+#define SCREEN_ADDRESS 0x3C
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+const int motor = 6;
+const int trigPin = 7;
+const int echoPin = 8;
+const int trigPin2 = 10;
+const int echoPin2 = 9;
+const int button = 4;
+bool cmd_given = false;
+int time;
+int score = 0;
+int curr_time = 0;
+const int joystickY = A0;
+
+int cmd = -1; 
+
+void setup() {
+  // Initialize the OLED display
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    for (;;);
+  }
+
+  // Clear the display
+  display.clearDisplay();
+ 
+  // Initial screen message
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+  display.println("3");
+  display.display();
+
+  delay(1000);
+ 
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+  display.println("2");
+  display.display();
+
+  delay(1000);
+
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+  display.println("1");
+  display.display();
+
+  delay(1000);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(trigPin2, OUTPUT);
+  pinMode(echoPin2, INPUT);
+  pinMode(motor, OUTPUT);
+  pinMode(button, INPUT);
+
+
+  randomSeed(analogRead(0));
+}
+
+//sense left
+bool sense1() {
+ 
+  float distance, duration;
+
+  // Send ultrasonic pulse
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+ 
+  // Read echo time
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration * 0.0343) / 2; // Convert to cm
+  distance = round(distance);
+
+  if(distance < 10)
+  {
+    return true;
+  }
+ 
+  return false;
+}
+
+//sense right
+bool sense2() {
+
+  float distance, duration;
+
+  // Send ultrasonic pulse
+  digitalWrite(trigPin2, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin2, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin2, LOW);
+
+ 
+  // Read echo time
+  duration = pulseIn(echoPin2, HIGH);
+  distance = (duration * 0.0343) / 2; // Convert to cm
+  distance = round(distance);
+
+  if(distance < 10)
+  {
+    return true;
+  }
+ 
+  return false;
+}
+
+bool buttonsense() {
+  if(digitalRead(button)==HIGH)
+  {
+    return true;
+  }
+  return false;
+}
+
+
+bool joysense() {
+  static bool movedUp = false;
+  int yValue = analogRead(joystickY);  
+  if (!movedUp) 
+  {
+    if (yValue > 900) 
+    {
+      movedUp = true;
+    }
+  } 
+  else{ 
+    if (yValue < 300) {  
+      movedUp = false;  
+      return true;  
+    }
+  }
+
+  return false;
+}
+
+
+//move left
+void move1(){
+  digitalWrite(motor, HIGH);
+  delay(500);
+  digitalWrite(motor, LOW);
+  delay(500);
+}
+
+//move right
+void move2(){
+  digitalWrite(motor, HIGH);
+  delay(500);
+  digitalWrite(motor, LOW);
+  delay(500);
+}
+
+//pick command
+int command(){
+  int cmd = random(4);
+  return cmd;
+}
+
+//print command for testing
+void printCommand(int input){
+
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+
+  if (input == 0){
+    display.println("LEFT!");
+  }else if (input == 1){
+    display.println("RIGHT!");
+  }
+  else if (input == 2){
+    display.println("FIRE!");
+  }
+  else if (input == 3){
+    display.println("RELOAD!");
+  }
+
+  display.display();
+}
+
+//for correct input
+void goodInput(int s){
+
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+  display.println("GOOD "+String(s));
+
+  display.display();
+
+
+  delay(1000);
+}
+
+void badInput(int s){
+ 
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+  display.println("YOU DIED");
+  display.display();
+
+  delay(3000);
+
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(10, 10);
+  display.println("SCORE: "+String(s));
+  display.display();
+
+  for(;;);
+}
+
+
+void loop()
+{
+
+  if (!cmd_given){
+    cmd = command();
+    printCommand(cmd);
+    cmd_given = true;
+    curr_time = 200 - 40*log((score+10)/5);
+  }
+
+  if (curr_time < 10){
+    badInput(score);
+  }
+
+  if(sense1()){
+    if (cmd == 0){
+      move1();
+      score++;
+      goodInput(score);
+      cmd_given = false;
+    }else{
+      badInput(score);
+    }
+  }
+ 
+  if(sense2()){
+    if (cmd == 1){
+      move2();
+      score++;
+      goodInput(score);
+      cmd_given = false;
+    }else{
+      badInput(score);
+    }
+  }
+
+    if(buttonsense()){
+    if (cmd == 2){
+      score++;
+      goodInput(score);
+      cmd_given = false;
+    }else{
+      badInput(score);
+    }
+  }
+
+    if (joysense()) {
+  if (cmd == 3) {
+    score++;
+    goodInput(score);
+    cmd_given = false;
+  } else {
+    badInput(score);
+  }
+}
+
+  curr_time--;
+  delay(10);
+}
