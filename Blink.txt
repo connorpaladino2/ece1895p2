@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
+#include <Servo.h>
 #include <Adafruit_SSD1306.h>
 
 #define SCREEN_WIDTH 128
@@ -11,6 +12,7 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int motor = 6;
+Servo servo;
 const int trigPin = 7;
 const int echoPin = 8;
 const int trigPin2 = 10;
@@ -21,6 +23,7 @@ int time;
 int score = 0;
 int curr_time = 0;
 const int joystickY = A0;
+int pos = 90;
 
 int cmd = -1; 
 
@@ -64,15 +67,18 @@ void setup() {
   pinMode(echoPin, INPUT);
   pinMode(trigPin2, OUTPUT);
   pinMode(echoPin2, INPUT);
-  pinMode(motor, OUTPUT);
+  servo.attach(motor);
   pinMode(button, INPUT);
 
 
   randomSeed(analogRead(0));
+  servo.write(pos);
+  servo.detach();
+  servo.attach(motor);
 }
 
 //sense left
-bool sense1() {
+bool senseLeft() {
  
   float distance, duration;
 
@@ -98,7 +104,7 @@ bool sense1() {
 }
 
 //sense right
-bool sense2() {
+bool senseRight() {
 
   float distance, duration;
 
@@ -154,24 +160,32 @@ bool joysense() {
 
 
 //move left
-void move1(){
-  digitalWrite(motor, HIGH);
-  delay(500);
-  digitalWrite(motor, LOW);
-  delay(500);
+void moveLeft(){
+  pos = pos - 30;
+  servo.write(pos);
+  delay(1000);
+  servo.detach();
+  servo.attach(motor);
 }
 
 //move right
-void move2(){
-  digitalWrite(motor, HIGH);
-  delay(500);
-  digitalWrite(motor, LOW);
-  delay(500);
+void moveRight(){
+  pos = pos + 30;
+  servo.write(pos);
+  delay(1000);
+  servo.detach();
+  servo.attach(motor);
 }
 
 //pick command
 int command(){
   int cmd = random(4);
+  if (cmd == 0 && pos == 0){
+    return 1;
+  }
+  if (cmd == 1 && pos == 180){
+    return 0;
+  }
   return cmd;
 }
 
@@ -249,9 +263,9 @@ void loop()
     badInput(score);
   }
 
-  if(sense1()){
+  if(senseLeft()){
     if (cmd == 0){
-      move1();
+      moveLeft();
       score++;
       goodInput(score);
       cmd_given = false;
@@ -260,9 +274,9 @@ void loop()
     }
   }
  
-  if(sense2()){
+  if(senseRight()){
     if (cmd == 1){
-      move2();
+      moveRight();
       score++;
       goodInput(score);
       cmd_given = false;
