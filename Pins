@@ -1,0 +1,20 @@
+Left Side (Bottom to Top):                Connected to:
+Digital Pin 8, Pin #14: PB0                            HC-SR04 Echo _
+Digital Pin 7, Pin #13: PD7                            HC-SR04 Trig _
+Digital Pin 6, Pin #12: PD6                            MG995 Input
+Crystal, Pin #10: PB7                                  Silver Component & Ground 
+Crystal, Pin #9: PB6                                   Silver Component & Ground 
+Ground, Pin #8: GND                                    Ground
+Voltage (VCC), Pin #7: VCC                             Voltage
+Digital Pin 4, Pin #6: PD4                             Input Button (shoot)
+RESET, Pin #1: PC6                                     Resistor/Voltage & Reset Button
+
+Right Side (Bottom to Top):             Connected to: 
+Digital Pin 9 (PWM), Pin #15: PB1                     HC-SR04 Echo _
+Digital Pin 10 (PWM), Pin #16: PB2                    HC-SR04 Trig _
+Voltage (VCC), Pin #20: AVCC                          Voltage
+Analog Reference, Pin #21: Aref                       Voltage
+Ground (GND), Pin #22: GND                            Ground
+Analog Input 0, Pin #23: PC0                          Joystick Y-Axis (VRY)
+Analog Input 4, Pin #27: PC4                          SCL OLED (Clock)
+Analog Input 5, Pin #28: PC5                          SDA OLED (Data)
