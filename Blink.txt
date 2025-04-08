@@ -210,10 +210,10 @@ void printCommand(int input){
   display.setCursor(10, 10);
 
   if (input == 0){
-    mp3.play(0);
+    mp3.play(1);
     display.println("LEFT!");
   }else if (input == 1){
-    mp3.play(1);
+    mp3.play(2);
     display.println("RIGHT!");
   }
   else if (input == 2){
