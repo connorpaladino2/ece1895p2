@@ -1,9 +1,9 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
-#include <Servo.h>
+#include <PWMServo.h>
 #include <Adafruit_SSD1306.h>
-#include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 #include <DFRobotDFPlayerMini.h>
 
 #define SCREEN_WIDTH 128
@@ -14,7 +14,7 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 const int motor = 6;
-Servo servo;
+PWMServo servo;
 const int trigPin = 7;
 const int echoPin = 8;
 const int trigPin2 = 10;
@@ -29,7 +29,7 @@ int pos = 90;
 
 int cmd = -1; 
 
-SoftwareSerial mp3Serial(2,5);
+AltSoftSerial mp3Serial;
 DFRobotDFPlayerMini mp3;
 
 void setup() {
@@ -82,11 +82,12 @@ void setup() {
   servo.attach(motor);
 
   mp3Serial.begin(9600);
-  
+
   if (!mp3.begin(mp3Serial)){
-    while(true);
+    while(1);
   }
-  mp3.volume(30);
+
+  mp3.volume(25);
 }
 
 //sense left
@@ -210,10 +211,8 @@ void printCommand(int input){
   display.setCursor(10, 10);
 
   if (input == 0){
-    mp3.play(1);
     display.println("LEFT!");
   }else if (input == 1){
-    mp3.play(2);
     display.println("RIGHT!");
   }
   else if (input == 2){
@@ -271,6 +270,9 @@ void loop()
     printCommand(cmd);
     cmd_given = true;
     curr_time = 200 - 40*log((score+10)/5);
+
+    if (cmd == 0) mp3.play(1);
+    if (cmd == 1) mp3.play(2);
   }
 
   if (curr_time < 10){
