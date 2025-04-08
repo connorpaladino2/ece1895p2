@@ -82,6 +82,10 @@ void setup() {
   servo.attach(motor);
 
   mp3Serial.begin(9600);
+  
+  if (!mp3.begin(mp3Serial)){
+    while(true);
+  }
   mp3.volume(30);
 }
 
