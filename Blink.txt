@@ -3,6 +3,8 @@
 #include <Adafruit_GFX.h>
 #include <Servo.h>
 #include <Adafruit_SSD1306.h>
+#include <SoftwareSerial.h>
+#include <DFRobotDFPlayerMini.h>
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 32
@@ -26,6 +28,9 @@ const int joystickY = A0;
 int pos = 90;
 
 int cmd = -1; 
+
+SoftwareSerial mp3Serial(2,5);
+DFRobotDFPlayerMini mp3;
 
 void setup() {
   // Initialize the OLED display
@@ -75,6 +80,9 @@ void setup() {
   servo.write(pos);
   servo.detach();
   servo.attach(motor);
+
+  mp3Serial.begin(9600);
+  mp3.volume(30);
 }
 
 //sense left
@@ -198,8 +206,10 @@ void printCommand(int input){
   display.setCursor(10, 10);
 
   if (input == 0){
+    mp3.play(0);
     display.println("LEFT!");
   }else if (input == 1){
+    mp3.play(1);
     display.println("RIGHT!");
   }
   else if (input == 2){
